@@ -1,8 +1,8 @@
-"Test that the plugin is loaded in OpenSearch":
+"Test that the Infino plugin is loaded in OpenSearch":
   - do:
       cat.plugins:
         local: true
         h: component
 
   - match:
-      $body: /^rename\n$/
+      $body: /^infino-opensearch-plugin-3.0.0-SNAPSHOT\n$/

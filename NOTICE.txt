@@ -1,2 +1,2 @@
-OpenSearch (https://opensearch.org/)
-Copyright OpenSearch Contributors
+Infino (https://infino.ai/)
+Copyright Infino AI, Inc.

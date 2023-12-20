@@ -6,12 +6,17 @@ apply plugin: 'opensearch.opensearchplugin'
 apply plugin: 'opensearch.yaml-rest-test'
 apply plugin: 'opensearch.pluginzip'
 
-def pluginName = 'rename'
-def pluginDescription = 'Custom plugin'
+def pluginName = 'infino-opensearch-plugin'
+def pluginDescription = 'A plugin that enables the Infino Telemetry DB to be used with OpenSearch'
 def projectPath = 'org.opensearch'
-def pathToPlugin = 'path.to.plugin'
-def pluginClassName = 'RenamePlugin'
-group = "RenameGroup"
+def pathToPlugin = 'infino'
+def pluginClassName = 'InfinoPlugin'
+group = "InfinoGroup"
+
+apply plugin: 'java'
+
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
 
 tasks.register("preparePluginPathDirs") {
     mustRunAfter clean
@@ -46,8 +51,19 @@ publishing {
     }
 }
 
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+}
+
 opensearchplugin {
-    name pluginName
+    name "${pluginName}-${opensearch_version}"
     description pluginDescription
     classname "${projectPath}.${pathToPlugin}.${pluginClassName}"
     licenseFile rootProject.file('LICENSE.txt')
@@ -77,6 +93,18 @@ buildscript {
     }
 }
 
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
+    testImplementation 'org.mockito:mockito-core:5.5.0'
+    testImplementation 'org.hamcrest:hamcrest:2.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0'
+    testImplementation 'org.apiguardian:apiguardian-api:1.1.0'
+
+
+    // testRuntime 'org.junit.platform:junit-platform-runner:1.5.2'
+}
+
 repositories {
     mavenLocal()
     maven { url "https://aws.oss.sonatype.org/content/repositories/snapshots" }
@@ -86,6 +114,8 @@ repositories {
 
 test {
     include '**/*Tests.class'
+    environment "INFINO_SERVER_URL", "http://localhost:3000"
+    useJUnitPlatform()
 }
 
 task integTest(type: RestIntegTestTask) {
