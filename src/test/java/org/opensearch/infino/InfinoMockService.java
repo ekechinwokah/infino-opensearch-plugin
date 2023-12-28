@@ -12,7 +12,7 @@ import org.opensearch.rest.BytesRestResponse;
 import org.opensearch.rest.RestResponse;
 import org.opensearch.core.rest.RestStatus;
 
-public class InfinoService {
+public class InfinoMockService {
 
     public static void helloworld() {
         return;

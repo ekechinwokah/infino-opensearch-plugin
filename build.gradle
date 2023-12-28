@@ -15,8 +15,27 @@ group = "InfinoGroup"
 
 apply plugin: 'java'
 
-sourceCompatibility = JavaVersion.VERSION_21
-targetCompatibility = JavaVersion.VERSION_21
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+// We don't have to use OpenSearch license for this plugin
+tasks.named("dependencyLicenses").configure { it.enabled = false }
+dependenciesInfo.enabled = false
+
+// jarhell 
+jarHell.enabled = false
+
+// OpenSearch don't support running gradle with a JVM that is in FIPS 140 mode, so skip tests.
+// WaitForHttpResourceTests tests would fail as they use JKS/PKCS12 keystores
+if (org.opensearch.gradle.info.BuildParams.inFipsJvm) {
+
+    test.enabled = false
+    testingConventions.enabled = false
+}
+
+// OpenSearch forbids @Test annotations by default, so we disable that check for unit tests.
+tasks.named('forbiddenApisMain').configure { onlyIf { false } }
+tasks.named('forbiddenApisTest').configure { onlyIf { false } }
 
 tasks.register("preparePluginPathDirs") {
     mustRunAfter clean
@@ -93,16 +112,14 @@ buildscript {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        force 'org.junit.platform:junit-platform-engine:1.6.0'
+    }
+}
+
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
     testImplementation 'org.mockito:mockito-core:5.5.0'
-    testImplementation 'org.hamcrest:hamcrest:2.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.6.0'
-    testImplementation 'org.apiguardian:apiguardian-api:1.1.0'
-
-
-    // testRuntime 'org.junit.platform:junit-platform-runner:1.5.2'
 }
 
 repositories {
@@ -114,8 +131,10 @@ repositories {
 
 test {
     include '**/*Tests.class'
-    environment "INFINO_SERVER_URL", "http://localhost:3000"
-    useJUnitPlatform()
+    environment "INFINO_SERVER_URL", "http://test-host:3000"
+
+    // Turn off the security manager for unit tests.
+    jvmArgs '-Dtests.security.manager=false'
 }
 
 task integTest(type: RestIntegTestTask) {
