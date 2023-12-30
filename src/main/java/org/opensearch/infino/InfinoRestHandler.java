@@ -60,11 +60,6 @@ import static org.opensearch.rest.RestRequest.Method.*;
  *
  * Note that URIs will normally be in form:
  *
- * http://endpoint/infino/logs/<index-name>/_action?parameters OR
- * http://endpoint/infino/metrics/<index-name>/_action?parameters OR
- * http://endpoint/infino/<index-name>/_action?parameters OR
- * http://endpoint/infino/<index-name>/_action OR
- * http://endpoint/infino/<index-name>
  */
 public class InfinoRestHandler extends BaseRestHandler {
 
@@ -73,6 +68,13 @@ public class InfinoRestHandler extends BaseRestHandler {
     private static final HttpClient httpClient = HttpClient.newHttpClient();
     private static final Logger logger = LogManager.getLogger(InfinoRestHandler.class);
 
+    /** 
+     * Get get a new instance of the class 
+     * 
+     * @param request - the REST request to serialize
+     * 
+     * @return a configured InfinoSerializeRequestURI object
+     */
     protected InfinoSerializeRequestURI getInfinoSerializeRequestURI(RestRequest request) {
         return new InfinoSerializeRequestURI(request);
     }
@@ -80,12 +82,18 @@ public class InfinoRestHandler extends BaseRestHandler {
     // List of futures we need to clear on close
     private static List<CompletableFuture<?>> futures = new ArrayList<>();
 
+    /** Get the HTTP Client 
+     *
+     * @return the httpclient member from this class
+     */
     protected HttpClient getHttpClient() {
         return httpClient;
     }
 
     /**
      * Name of this REST handler
+     * 
+     * @return a string for registering the handler
      */
     @Override
     public String getName() {
@@ -96,7 +104,11 @@ public class InfinoRestHandler extends BaseRestHandler {
         Executors.newScheduledThreadPool(THREADPOOLSIZE, new CustomThreadFactory("InfinoPluginThread"));
 
 
-    // Get thread pool
+    /** 
+     * Get thread pool 
+     * 
+     * @return the thread pool to use for the requests
+     */
     protected ExecutorService getInfinoThreadPool () {
         return infinoThreadPool;
     }
@@ -117,10 +129,11 @@ public class InfinoRestHandler extends BaseRestHandler {
         infinoThreadPool.shutdown();
     }
 
-    // Use a privileged custom thread factory since Security Manager blocks access
-    // to thread groups.
-    //
-    // https://github.com/opensearch-project/OpenSearch/issues/5359
+    /** Use a privileged custom thread factory since Security Manager blocks access
+     * to thread groups.
+     *
+     * https://github.com/opensearch-project/OpenSearch/issues/5359
+     */
     protected static final class CustomThreadFactory implements ThreadFactory {
         private final AtomicInteger threadNumber = new AtomicInteger(1);
         private final String namePrefix;
@@ -145,10 +158,10 @@ public class InfinoRestHandler extends BaseRestHandler {
     }
 
     /**
-     * Delete a Lucene index with the same name as the Infino index if it exists.
+     * Deletes a Lucene index if it exists.
      *
-     * @param client - client for the current OpenSearch node
-     * @param indexName - name of the index to delete
+     * @param client       The NodeClient to perform the operation.
+     * @param rawIndexName The raw name of the index to delete.
      */
     protected void deleteLuceneIndexIfExists(NodeClient client, String rawIndexName) {
         String indexName = "infino-" + rawIndexName;
@@ -186,7 +199,7 @@ public class InfinoRestHandler extends BaseRestHandler {
      * Create a Lucene index with the same name as the Infino index if it doesn't exist.
      *
      * @param client - client for the current OpenSearch node
-     * @param indexName - name of the index to create
+     * @param rawIndexName - name of the index to create
      */
     protected void createLuceneIndexIfNeeded(NodeClient client, String rawIndexName) {
         String indexName = "infino-" + rawIndexName;

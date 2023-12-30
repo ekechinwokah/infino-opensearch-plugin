@@ -23,7 +23,9 @@ import java.util.function.Supplier;
 
 import static java.util.Collections.singletonList;
 
-// Implement both the REST API handler for client calls
+/**
+ *  Implement both the REST API handler for client calls
+ */ 
 public class InfinoPlugin extends Plugin implements ActionPlugin {
 
     // This methods overrides the method from the parent class to hand a list

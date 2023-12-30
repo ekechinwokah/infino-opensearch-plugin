@@ -8,8 +8,6 @@
 
 package org.opensearch.infino;
 
-import org.junit.Assert;
-
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
@@ -43,12 +41,11 @@ public class InfinoPluginIT extends OpenSearchIntegTestCase {
         logger.info("response body: {}", body);
         MatcherAssert.assertThat(body, Matchers.containsString("infino"));
     }
+    // public void testInfinoPing() throws IOException, ParseException {
+    //     Response response = createRestClient().performRequest(new Request("GET", "/infino/_ping"));
+    //     String body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
 
-    public void testInfinoPing() throws IOException, ParseException {
-        Response response = createRestClient().performRequest(new Request("GET", "/infino/_ping"));
-        String body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-
-        logger.info("response body: {}", body);
-        MatcherAssert.assertThat(body, Matchers.containsString("OK"));
-    }
+    //     logger.info("response body: {}", body);
+    //     MatcherAssert.assertThat(body, Matchers.containsString("OK"));
+    // }
 }

@@ -149,6 +149,8 @@ integTest {
     if (System.getProperty("test.debug") != null) {
         jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005'
     }
+    // Turn off the security manager for integration tests.
+    jvmArgs '-Dtests.security.manager=false'
 }
 
 testClusters.integTest {

@@ -28,27 +28,41 @@ import static org.opensearch.rest.RestRequest.Method.*;
  * 1. Search window defaults to the past 30 days if not specified by the request.
  * 2. To access Infino indexes, the REST caller must prefix the index name with '/infino/'.
  * 3. If the specified index does not exist in OpenSearch, create it before sending to Infino.
- *
- * Note that REST paths will normally be in form:
- *
- * /infino/logs/<index-name>/_action?parameters OR
- * /infino/metrics/<index-name>/_action?parameters OR
- * /infino/<index-name>/_action?parameters
  */
 public class InfinoSerializeRequestURI {
 
-    protected String prefix; // Path prefix. E.g. /infino/logs/
-    protected String path; // Path postfix. E.g. /_search
-    protected Map<String, String> params; // Request parameters. E.g. ?start_time="123"
-    protected InfinoIndexType indexType; // Type of index. E.g. LOGS or METRICS
-    protected String indexName; // Name of the Infino index
-    protected RestRequest.Method method; // The REST method for the request
-    protected String startTime; // Start time for search queries
-    protected String endTime; // End time for search queries
-    protected String finalUrl; // final URL to be sent to Infino
+    /** Path prefix. E.g. /infino/logs */
+    protected String prefix;
 
-    protected static String infinoEndpoint = System.getenv("INFINO_SERVER_URL"); // The Infino endpoint
-    protected static int DEFAULT_SEARCH_TIME_RANGE = 7; // Default time range for Infino searches is 7 days
+    /** Default time range for Infino searches is 7 days */
+    protected static int DEFAULT_SEARCH_TIME_RANGE = 7;
+
+    /** End time for search queries */
+    protected String endTime;
+
+    /** Final URL to be sent to Infino */
+    protected String finalUrl;
+
+    /** Name of the Infino index */
+    protected String indexName;
+
+    /** Type of index. E.g. LOGS or METRICS */
+    protected InfinoIndexType indexType;
+
+    /** The Infino endpoint */
+    protected static String infinoEndpoint = System.getenv("INFINO_SERVER_URL");
+
+    /** The REST method for the request */
+    protected RestRequest.Method method;
+
+    /** Request parameters. E.g. ?start_time="123" */
+    protected Map<String, String> params;
+
+    /** Path postfix. E.g. /_search */
+    protected String path;
+
+    /** Start time for search queries */
+    protected String startTime;
 
     private static final Logger logger = LogManager.getLogger(InfinoSerializeRequestURI.class);
     private static final String defaultInfinoEndpoint = "http://localhost:3000";
@@ -95,7 +109,7 @@ public class InfinoSerializeRequestURI {
             throw new IllegalArgumentException("Request path cannot be null");
         }
     }
-    
+
     private InfinoIndexType determineIndexType(String requestPath, int lastSlash) {
         String indexSegment = getPrefix(lastSlash, requestPath);
         if (indexSegment == null) {
@@ -106,8 +120,8 @@ public class InfinoSerializeRequestURI {
             case "metrics" -> InfinoIndexType.METRICS;
             default -> InfinoIndexType.UNDEFINED;
         };
-    }    
-    
+    }
+
 
     // Helper function to construct Infino URL
     private void constructInfinoRequestURI() {
@@ -154,7 +168,7 @@ public class InfinoSerializeRequestURI {
                 throw new IllegalArgumentException("Unsupported GET path: " + path);
         }
     }
-    
+
     private String constructPostUrl() {
         // Constructing URL for POST requests
         return switch (indexType) {
@@ -163,7 +177,7 @@ public class InfinoSerializeRequestURI {
             default -> throw new IllegalArgumentException("Unsupported index type for POST: " + indexType);
         };
     }
-    
+
     private String constructPutDeleteUrl() {
         // Constructing URL for PUT and DELETE requests
         return infinoEndpoint + "/:" + indexName;
@@ -204,7 +218,7 @@ public class InfinoSerializeRequestURI {
 
     /**
      * Retrieves the value of the specified environment variable or returns the default value if the environment variable is not set.
-     * 
+     *
      * @param name The name of the environment variable.
      * @param defaultValue The default value to return if the environment variable is not set.
      * @return The value of the environment variable or the default value.
@@ -218,25 +232,42 @@ public class InfinoSerializeRequestURI {
         return value;
     }
 
-    // Helper method for unit tests etc.
+    /**
+     * Gets the final URL.
+     *
+     * @return the final URL
+     */
     protected String getFinalUrl() {
         return this.finalUrl;
     }
 
-    // Helper method for unit tests etc.
+    /**
+     * Gets the index name.
+     *
+     * @return the index name
+     */
     protected RestRequest.Method getMethod() {
         return this.method;
     }
 
-    // Helper method for unit tests etc.
+    /**
+     * Gets the index type.
+     *
+     * @return the index type
+     */
     protected String getIndexName() {
         return this.indexName;
     }
 
-    // Helper method for unit tests etc.
+    /**
+     * Gets the method.
+     *
+     * @return the method
+     */
     protected InfinoIndexType getIndexType() {
         return this.indexType;
     }
+
     /**
      *  Consumes all the request parameters after the "?" in the URI
      *  otherwise the Rest handler will fail. We also need to explictly
@@ -268,11 +299,17 @@ public class InfinoSerializeRequestURI {
      * The type of index in Infino. Infino has a different index for each telemetry data
      * type: logs, metrics, and traces (traces are not yet supported as of Dec 2023).
      */
-    public static enum InfinoIndexType {
+    public enum InfinoIndexType {
+        /** Undefined type. */
         UNDEFINED,
+
+        /** Logs type. */
         LOGS,
+
+        /** Metrics type. */
         METRICS
     }
+
 
     // Helper method to build query strings
     private String buildQueryString(String... params) {
