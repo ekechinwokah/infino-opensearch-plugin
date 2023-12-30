@@ -10,108 +10,9 @@
 
 import org.junit.Before;
 import org.junit.After;
-import org.opensearch.action.ActionRequest;
-import org.opensearch.action.ActionType;
-import org.opensearch.action.admin.indices.alias.IndicesAliasesRequest;
-import org.opensearch.action.admin.indices.alias.IndicesAliasesRequestBuilder;
-import org.opensearch.action.admin.indices.alias.get.GetAliasesRequest;
-import org.opensearch.action.admin.indices.alias.get.GetAliasesRequestBuilder;
-import org.opensearch.action.admin.indices.alias.get.GetAliasesResponse;
-import org.opensearch.action.admin.indices.analyze.AnalyzeAction.Request;
-import org.opensearch.action.admin.indices.analyze.AnalyzeAction.Response;
-import org.opensearch.action.admin.indices.analyze.AnalyzeRequestBuilder;
-import org.opensearch.action.admin.indices.cache.clear.ClearIndicesCacheRequest;
-import org.opensearch.action.admin.indices.cache.clear.ClearIndicesCacheRequestBuilder;
-import org.opensearch.action.admin.indices.cache.clear.ClearIndicesCacheResponse;
-import org.opensearch.action.admin.indices.close.CloseIndexRequest;
-import org.opensearch.action.admin.indices.close.CloseIndexRequestBuilder;
-import org.opensearch.action.admin.indices.close.CloseIndexResponse;
-import org.opensearch.action.admin.indices.create.CreateIndexRequest;
-import org.opensearch.action.admin.indices.create.CreateIndexRequestBuilder;
-import org.opensearch.action.admin.indices.create.CreateIndexResponse;
-import org.opensearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.opensearch.action.admin.indices.delete.DeleteIndexRequestBuilder;
-import org.opensearch.action.admin.indices.exists.indices.IndicesExistsRequest;
-import org.opensearch.action.admin.indices.exists.indices.IndicesExistsRequestBuilder;
-import org.opensearch.action.admin.indices.exists.indices.IndicesExistsResponse;
-import org.opensearch.action.admin.indices.flush.FlushRequest;
-import org.opensearch.action.admin.indices.flush.FlushRequestBuilder;
-import org.opensearch.action.admin.indices.flush.FlushResponse;
-import org.opensearch.action.admin.indices.forcemerge.ForceMergeRequest;
-import org.opensearch.action.admin.indices.forcemerge.ForceMergeRequestBuilder;
-import org.opensearch.action.admin.indices.forcemerge.ForceMergeResponse;
-import org.opensearch.action.admin.indices.get.GetIndexRequest;
-import org.opensearch.action.admin.indices.get.GetIndexRequestBuilder;
-import org.opensearch.action.admin.indices.get.GetIndexResponse;
-import org.opensearch.action.admin.indices.mapping.get.GetFieldMappingsRequest;
-import org.opensearch.action.admin.indices.mapping.get.GetFieldMappingsRequestBuilder;
-import org.opensearch.action.admin.indices.mapping.get.GetFieldMappingsResponse;
-import org.opensearch.action.admin.indices.mapping.get.GetMappingsRequest;
-import org.opensearch.action.admin.indices.mapping.get.GetMappingsRequestBuilder;
-import org.opensearch.action.admin.indices.mapping.get.GetMappingsResponse;
-import org.opensearch.action.admin.indices.mapping.put.PutMappingRequest;
-import org.opensearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
-import org.opensearch.action.admin.indices.open.OpenIndexRequest;
-import org.opensearch.action.admin.indices.open.OpenIndexRequestBuilder;
-import org.opensearch.action.admin.indices.open.OpenIndexResponse;
-import org.opensearch.action.admin.indices.readonly.AddIndexBlockRequest;
-import org.opensearch.action.admin.indices.readonly.AddIndexBlockRequestBuilder;
-import org.opensearch.action.admin.indices.readonly.AddIndexBlockResponse;
-import org.opensearch.action.admin.indices.recovery.RecoveryRequest;
-import org.opensearch.action.admin.indices.recovery.RecoveryRequestBuilder;
-import org.opensearch.action.admin.indices.recovery.RecoveryResponse;
-import org.opensearch.action.admin.indices.refresh.RefreshRequest;
-import org.opensearch.action.admin.indices.refresh.RefreshRequestBuilder;
-import org.opensearch.action.admin.indices.refresh.RefreshResponse;
-import org.opensearch.action.admin.indices.replication.SegmentReplicationStatsRequest;
-import org.opensearch.action.admin.indices.replication.SegmentReplicationStatsRequestBuilder;
-import org.opensearch.action.admin.indices.replication.SegmentReplicationStatsResponse;
-import org.opensearch.action.admin.indices.rollover.RolloverRequest;
-import org.opensearch.action.admin.indices.rollover.RolloverRequestBuilder;
-import org.opensearch.action.admin.indices.rollover.RolloverResponse;
-import org.opensearch.action.admin.indices.segments.IndicesSegmentResponse;
-import org.opensearch.action.admin.indices.segments.IndicesSegmentsRequest;
-import org.opensearch.action.admin.indices.segments.IndicesSegmentsRequestBuilder;
-import org.opensearch.action.admin.indices.settings.get.GetSettingsRequest;
-import org.opensearch.action.admin.indices.settings.get.GetSettingsRequestBuilder;
-import org.opensearch.action.admin.indices.settings.get.GetSettingsResponse;
-import org.opensearch.action.admin.indices.settings.put.UpdateSettingsRequest;
-import org.opensearch.action.admin.indices.settings.put.UpdateSettingsRequestBuilder;
-import org.opensearch.action.admin.indices.shards.IndicesShardStoreRequestBuilder;
-import org.opensearch.action.admin.indices.shards.IndicesShardStoresRequest;
-import org.opensearch.action.admin.indices.shards.IndicesShardStoresResponse;
-import org.opensearch.action.admin.indices.shrink.ResizeRequest;
-import org.opensearch.action.admin.indices.shrink.ResizeRequestBuilder;
-import org.opensearch.action.admin.indices.shrink.ResizeResponse;
-import org.opensearch.action.admin.indices.stats.IndicesStatsRequest;
-import org.opensearch.action.admin.indices.stats.IndicesStatsRequestBuilder;
-import org.opensearch.action.admin.indices.stats.IndicesStatsResponse;
-import org.opensearch.action.admin.indices.template.delete.DeleteIndexTemplateRequest;
-import org.opensearch.action.admin.indices.template.delete.DeleteIndexTemplateRequestBuilder;
-import org.opensearch.action.admin.indices.template.get.GetIndexTemplatesRequest;
-import org.opensearch.action.admin.indices.template.get.GetIndexTemplatesRequestBuilder;
-import org.opensearch.action.admin.indices.template.get.GetIndexTemplatesResponse;
-import org.opensearch.action.admin.indices.template.put.PutIndexTemplateRequest;
-import org.opensearch.action.admin.indices.template.put.PutIndexTemplateRequestBuilder;
-import org.opensearch.action.admin.indices.upgrade.get.UpgradeStatusRequest;
-import org.opensearch.action.admin.indices.upgrade.get.UpgradeStatusRequestBuilder;
-import org.opensearch.action.admin.indices.upgrade.get.UpgradeStatusResponse;
-import org.opensearch.action.admin.indices.upgrade.post.UpgradeRequest;
-import org.opensearch.action.admin.indices.upgrade.post.UpgradeRequestBuilder;
-import org.opensearch.action.admin.indices.upgrade.post.UpgradeResponse;
-import org.opensearch.action.admin.indices.validate.query.ValidateQueryRequest;
-import org.opensearch.action.admin.indices.validate.query.ValidateQueryRequestBuilder;
-import org.opensearch.action.admin.indices.validate.query.ValidateQueryResponse;
-import org.opensearch.action.support.master.AcknowledgedResponse;
-import org.opensearch.client.AdminClient;
-import org.opensearch.client.ClusterAdminClient;
-import org.opensearch.client.IndicesAdminClient;
+
 import org.opensearch.client.node.NodeClient;
-import org.opensearch.cluster.metadata.IndexMetadata.APIBlock;
-import org.opensearch.common.action.ActionFuture;
 import org.opensearch.common.settings.Settings;
-import org.opensearch.core.action.ActionListener;
-import org.opensearch.core.action.ActionResponse;
 import org.opensearch.core.rest.RestStatus;
 import org.opensearch.rest.AbstractRestChannel;
 import org.opensearch.rest.RestRequest;
@@ -137,7 +38,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -151,9 +51,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSession;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -172,13 +69,11 @@ import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
  * test that in integration tests as our handler is only registered
  * for validated methods and paths.
  * 
- * Lastly, testing the side effects of a PUT or DELETE request (i.e.
- * creating or deleting a Lucene mirror) through unit tests has proven
- * to be like shaving a Yak: https://en.wiktionary.org/wiki/yak_shaving.
- *
- * TODO: There must be a cleaner way to write this but we'll trade off
- *       development speed for verbosity. Perhaps we'll come to writing 
- *       unit tests for PUT and DELETE.
+ * Testing the side effects of a PUT or DELETE request (i.e.
+ * creating or deleting a Lucene mirror) or testing backoffs 
+ * through unit tests has proven to be like shaving a Yak: 
+ * https://en.wiktionary.org/wiki/yak_shaving, so we'll pick
+ * these up in integration tests.
  */
 @ThreadLeakScope(ThreadLeakScope.Scope.NONE)
 public class InfinoRestHandlerTests extends OpenSearchTestCase {
@@ -191,12 +86,7 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
     private int mockStatusCode = 200;
     private String mockPath = "/default/path";
     private String mockBody = "Default body";
-    private Map<String, List<String>> mockHeaders;
-    private CreateIndexResponse mockCreateIndexResponse;
-    private CreateIndexRequest mockCreateIndexRequest;
-    private IndicesExistsResponse mockIndicesExistsResponse;
-    private IndicesAdminClient mockIndicesAdminClient;
-    private ClusterAdminClient mockClusterAdminClient;
+    // private Map<String, List<String>> mockHeaders;
 
     private static final Logger logger = LogManager.getLogger(InfinoRestHandlerTests.class);
 
@@ -232,12 +122,6 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
         futures = new ArrayList<>(); // Initialize the list to track futures
         threadPool = new TestThreadPool(this.getClass().getSimpleName() + "ThreadPool");
         mockNodeClient = new NodeClient(Settings.EMPTY, threadPool);
-        mockHeaders = new HashMap<>();
-        mockCreateIndexResponse = mock(CreateIndexResponse.class);
-        mockCreateIndexRequest = mock(CreateIndexRequest.class);
-        mockIndicesExistsResponse = mock(IndicesExistsResponse.class);
-        mockIndicesAdminClient = mock(IndicesAdminClient.class);
-        mockClusterAdminClient = mock(ClusterAdminClient.class);
 
         // Override key methods in the handler
         handler = new InfinoRestHandler() {
