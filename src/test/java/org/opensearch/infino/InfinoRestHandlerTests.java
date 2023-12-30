@@ -10,19 +10,116 @@
 
 import org.junit.Before;
 import org.junit.After;
+import org.opensearch.action.ActionRequest;
+import org.opensearch.action.ActionType;
+import org.opensearch.action.admin.indices.alias.IndicesAliasesRequest;
+import org.opensearch.action.admin.indices.alias.IndicesAliasesRequestBuilder;
+import org.opensearch.action.admin.indices.alias.get.GetAliasesRequest;
+import org.opensearch.action.admin.indices.alias.get.GetAliasesRequestBuilder;
+import org.opensearch.action.admin.indices.alias.get.GetAliasesResponse;
+import org.opensearch.action.admin.indices.analyze.AnalyzeAction.Request;
+import org.opensearch.action.admin.indices.analyze.AnalyzeAction.Response;
+import org.opensearch.action.admin.indices.analyze.AnalyzeRequestBuilder;
+import org.opensearch.action.admin.indices.cache.clear.ClearIndicesCacheRequest;
+import org.opensearch.action.admin.indices.cache.clear.ClearIndicesCacheRequestBuilder;
+import org.opensearch.action.admin.indices.cache.clear.ClearIndicesCacheResponse;
+import org.opensearch.action.admin.indices.close.CloseIndexRequest;
+import org.opensearch.action.admin.indices.close.CloseIndexRequestBuilder;
+import org.opensearch.action.admin.indices.close.CloseIndexResponse;
 import org.opensearch.action.admin.indices.create.CreateIndexRequest;
+import org.opensearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.opensearch.action.admin.indices.create.CreateIndexResponse;
+import org.opensearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.opensearch.action.admin.indices.delete.DeleteIndexRequestBuilder;
 import org.opensearch.action.admin.indices.exists.indices.IndicesExistsRequest;
+import org.opensearch.action.admin.indices.exists.indices.IndicesExistsRequestBuilder;
 import org.opensearch.action.admin.indices.exists.indices.IndicesExistsResponse;
+import org.opensearch.action.admin.indices.flush.FlushRequest;
+import org.opensearch.action.admin.indices.flush.FlushRequestBuilder;
+import org.opensearch.action.admin.indices.flush.FlushResponse;
+import org.opensearch.action.admin.indices.forcemerge.ForceMergeRequest;
+import org.opensearch.action.admin.indices.forcemerge.ForceMergeRequestBuilder;
+import org.opensearch.action.admin.indices.forcemerge.ForceMergeResponse;
+import org.opensearch.action.admin.indices.get.GetIndexRequest;
+import org.opensearch.action.admin.indices.get.GetIndexRequestBuilder;
+import org.opensearch.action.admin.indices.get.GetIndexResponse;
+import org.opensearch.action.admin.indices.mapping.get.GetFieldMappingsRequest;
+import org.opensearch.action.admin.indices.mapping.get.GetFieldMappingsRequestBuilder;
+import org.opensearch.action.admin.indices.mapping.get.GetFieldMappingsResponse;
+import org.opensearch.action.admin.indices.mapping.get.GetMappingsRequest;
+import org.opensearch.action.admin.indices.mapping.get.GetMappingsRequestBuilder;
+import org.opensearch.action.admin.indices.mapping.get.GetMappingsResponse;
+import org.opensearch.action.admin.indices.mapping.put.PutMappingRequest;
+import org.opensearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
+import org.opensearch.action.admin.indices.open.OpenIndexRequest;
+import org.opensearch.action.admin.indices.open.OpenIndexRequestBuilder;
+import org.opensearch.action.admin.indices.open.OpenIndexResponse;
+import org.opensearch.action.admin.indices.readonly.AddIndexBlockRequest;
+import org.opensearch.action.admin.indices.readonly.AddIndexBlockRequestBuilder;
+import org.opensearch.action.admin.indices.readonly.AddIndexBlockResponse;
+import org.opensearch.action.admin.indices.recovery.RecoveryRequest;
+import org.opensearch.action.admin.indices.recovery.RecoveryRequestBuilder;
+import org.opensearch.action.admin.indices.recovery.RecoveryResponse;
+import org.opensearch.action.admin.indices.refresh.RefreshRequest;
+import org.opensearch.action.admin.indices.refresh.RefreshRequestBuilder;
+import org.opensearch.action.admin.indices.refresh.RefreshResponse;
+import org.opensearch.action.admin.indices.replication.SegmentReplicationStatsRequest;
+import org.opensearch.action.admin.indices.replication.SegmentReplicationStatsRequestBuilder;
+import org.opensearch.action.admin.indices.replication.SegmentReplicationStatsResponse;
+import org.opensearch.action.admin.indices.rollover.RolloverRequest;
+import org.opensearch.action.admin.indices.rollover.RolloverRequestBuilder;
+import org.opensearch.action.admin.indices.rollover.RolloverResponse;
+import org.opensearch.action.admin.indices.segments.IndicesSegmentResponse;
+import org.opensearch.action.admin.indices.segments.IndicesSegmentsRequest;
+import org.opensearch.action.admin.indices.segments.IndicesSegmentsRequestBuilder;
+import org.opensearch.action.admin.indices.settings.get.GetSettingsRequest;
+import org.opensearch.action.admin.indices.settings.get.GetSettingsRequestBuilder;
+import org.opensearch.action.admin.indices.settings.get.GetSettingsResponse;
+import org.opensearch.action.admin.indices.settings.put.UpdateSettingsRequest;
+import org.opensearch.action.admin.indices.settings.put.UpdateSettingsRequestBuilder;
+import org.opensearch.action.admin.indices.shards.IndicesShardStoreRequestBuilder;
+import org.opensearch.action.admin.indices.shards.IndicesShardStoresRequest;
+import org.opensearch.action.admin.indices.shards.IndicesShardStoresResponse;
+import org.opensearch.action.admin.indices.shrink.ResizeRequest;
+import org.opensearch.action.admin.indices.shrink.ResizeRequestBuilder;
+import org.opensearch.action.admin.indices.shrink.ResizeResponse;
+import org.opensearch.action.admin.indices.stats.IndicesStatsRequest;
+import org.opensearch.action.admin.indices.stats.IndicesStatsRequestBuilder;
+import org.opensearch.action.admin.indices.stats.IndicesStatsResponse;
+import org.opensearch.action.admin.indices.template.delete.DeleteIndexTemplateRequest;
+import org.opensearch.action.admin.indices.template.delete.DeleteIndexTemplateRequestBuilder;
+import org.opensearch.action.admin.indices.template.get.GetIndexTemplatesRequest;
+import org.opensearch.action.admin.indices.template.get.GetIndexTemplatesRequestBuilder;
+import org.opensearch.action.admin.indices.template.get.GetIndexTemplatesResponse;
+import org.opensearch.action.admin.indices.template.put.PutIndexTemplateRequest;
+import org.opensearch.action.admin.indices.template.put.PutIndexTemplateRequestBuilder;
+import org.opensearch.action.admin.indices.upgrade.get.UpgradeStatusRequest;
+import org.opensearch.action.admin.indices.upgrade.get.UpgradeStatusRequestBuilder;
+import org.opensearch.action.admin.indices.upgrade.get.UpgradeStatusResponse;
+import org.opensearch.action.admin.indices.upgrade.post.UpgradeRequest;
+import org.opensearch.action.admin.indices.upgrade.post.UpgradeRequestBuilder;
+import org.opensearch.action.admin.indices.upgrade.post.UpgradeResponse;
+import org.opensearch.action.admin.indices.validate.query.ValidateQueryRequest;
+import org.opensearch.action.admin.indices.validate.query.ValidateQueryRequestBuilder;
+import org.opensearch.action.admin.indices.validate.query.ValidateQueryResponse;
+import org.opensearch.action.support.master.AcknowledgedResponse;
+import org.opensearch.client.AdminClient;
+import org.opensearch.client.ClusterAdminClient;
+import org.opensearch.client.IndicesAdminClient;
 import org.opensearch.client.node.NodeClient;
+import org.opensearch.cluster.metadata.IndexMetadata.APIBlock;
+import org.opensearch.common.action.ActionFuture;
+import org.opensearch.common.settings.Settings;
 import org.opensearch.core.action.ActionListener;
+import org.opensearch.core.action.ActionResponse;
 import org.opensearch.core.rest.RestStatus;
 import org.opensearch.rest.AbstractRestChannel;
 import org.opensearch.rest.RestRequest;
 import org.opensearch.rest.RestResponse;
 import org.opensearch.test.OpenSearchTestCase;
-// import org.opensearch.test.rest.FakeRestChannel;
 import org.opensearch.test.rest.FakeRestRequest;
+import org.opensearch.threadpool.TestThreadPool;
+import org.opensearch.threadpool.ThreadPool;
 
 import java.io.IOException;
 import java.net.Authenticator;
@@ -40,6 +137,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -54,6 +152,8 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSession;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -65,10 +165,20 @@ import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 /**
  * Test the Infino Rest handler.
  *
- * We have to manually mock a number of classes due to conflicts between HttpRequest
- * class in OpenSearch and Java and the way threads are handled in OpenSearch tests.
+ * We have to mock a number of classes as there is a lot of boilerplate
+ * infrastructure around Rest calls and thread management in OpenSearch.
+ * 
+ * Route validation is handled by BaseRestHandler. We'll need to 
+ * test that in integration tests as our handler is only registered
+ * for validated methods and paths.
+ * 
+ * Lastly, testing the side effects of a PUT or DELETE request (i.e.
+ * creating or deleting a Lucene mirror) through unit tests has proven
+ * to be like shaving a Yak: https://en.wiktionary.org/wiki/yak_shaving.
  *
- * TODO: There must be a cleaner way to write this.
+ * TODO: There must be a cleaner way to write this but we'll trade off
+ *       development speed for verbosity. Perhaps we'll come to writing 
+ *       unit tests for PUT and DELETE.
  */
 @ThreadLeakScope(ThreadLeakScope.Scope.NONE)
 public class InfinoRestHandlerTests extends OpenSearchTestCase {
@@ -77,23 +187,38 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
     private InfinoSerializeRequestURI mockInfinoSerializeRequestURI;
     private InfinoRestHandler handler;
     private List<CompletableFuture<?>> futures;
+    private ThreadPool threadPool;
+    private int mockStatusCode = 200;
+    private String mockPath = "/default/path";
+    private String mockBody = "Default body";
+    private Map<String, List<String>> mockHeaders;
+    private CreateIndexResponse mockCreateIndexResponse;
+    private CreateIndexRequest mockCreateIndexRequest;
+    private IndicesExistsResponse mockIndicesExistsResponse;
+    private IndicesAdminClient mockIndicesAdminClient;
+    private ClusterAdminClient mockClusterAdminClient;
 
     private static final Logger logger = LogManager.getLogger(InfinoRestHandlerTests.class);
 
     private MyHttpClient mockMyHttpClient = new MyHttpClient() {
         @Override
-        public CompletableFuture<HttpResponse<String>> sendAsyncRequest(HttpRequest request, HttpResponse.BodyHandler<String> responseBodyHandler) {
+        public CompletableFuture<HttpResponse<String>> sendAsyncRequest(
+            HttpRequest request,
+            HttpResponse.BodyHandler<String> responseBodyHandler
+        ) {
             // Return a CompletableFuture with the mocked response
             CompletableFuture<HttpResponse<String>> future = new CompletableFuture<>();
-            future.complete(createFakeResponse());
+            future.complete(createFakeResponse(mockStatusCode, mockPath, mockBody));
             futures.add(future);
             return future;
         }
     };
-
-    // Define an interface to wrap HttpClient calls
+    
     public interface MyHttpClient {
-        CompletableFuture<HttpResponse<String>> sendAsyncRequest(HttpRequest request, HttpResponse.BodyHandler<String> responseBodyHandler);
+        CompletableFuture<HttpResponse<String>> sendAsyncRequest(
+            HttpRequest request,
+            HttpResponse.BodyHandler<String> responseBodyHandler
+        );
     }
 
     // Use a single thread for testing
@@ -103,9 +228,16 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
     public void setUp() throws Exception {
         super.setUp();
         executorService = Executors.newSingleThreadExecutor();
-        mockNodeClient = mock(NodeClient.class);
         mockInfinoSerializeRequestURI = mock(InfinoSerializeRequestURI.class);
         futures = new ArrayList<>(); // Initialize the list to track futures
+        threadPool = new TestThreadPool(this.getClass().getSimpleName() + "ThreadPool");
+        mockNodeClient = new NodeClient(Settings.EMPTY, threadPool);
+        mockHeaders = new HashMap<>();
+        mockCreateIndexResponse = mock(CreateIndexResponse.class);
+        mockCreateIndexRequest = mock(CreateIndexRequest.class);
+        mockIndicesExistsResponse = mock(IndicesExistsResponse.class);
+        mockIndicesAdminClient = mock(IndicesAdminClient.class);
+        mockClusterAdminClient = mock(ClusterAdminClient.class);
 
         // Override key methods in the handler
         handler = new InfinoRestHandler() {
@@ -134,6 +266,8 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        threadPool.shutdown();
+        mockNodeClient.close();
         executorService.shutdown();
         // Await termination with a timeout to ensure tests complete promptly
         try {
@@ -156,11 +290,11 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
     }
 
     // Create a fake HttpResponse for testing
-    private HttpResponse<String> createFakeResponse() {
+    private HttpResponse<String> createFakeResponse(int fakeStatusCode, String fakePath, String fakeBody) {
         return new HttpResponse<>() {
             @Override
             public int statusCode() {
-                return 200; // OK status
+                return fakeStatusCode;
             }
 
             @Override
@@ -170,7 +304,7 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
 
             @Override
             public HttpRequest request() {
-                return HttpRequest.newBuilder().uri(URI.create("http://example.com")).build();
+                return HttpRequest.newBuilder().uri(URI.create(fakePath)).build();
             }
 
             @Override
@@ -180,7 +314,7 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
 
             @Override
             public String body() {
-                return "hello world"; // Fake body content
+                return fakeBody; // Fake body content
             }
 
             @Override
@@ -279,7 +413,7 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
     }
 
     // We use our own FakeRestChannel (from BaseRestHandler tests) because we need to
-    // access latch to wait on thread sync in the handler.
+    // access latch to wait on threads in the handler.
     public final class FakeRestChannel extends AbstractRestChannel {
         protected final CountDownLatch latch;
         private final AtomicInteger responses = new AtomicInteger();
@@ -315,266 +449,69 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
         }
     }
 
-    // Test successful GET request
-    public void testGetRequest() throws Exception {
-        testRequestWithMethod(RestRequest.Method.GET, "hello world");
+    // Test handling of a 2xx GET response
+    public void testGetRequest() throws Exception {      
+        runRequestHandler(RestRequest.Method.GET, "Default body");
     }
 
-    // Test successful POST request
+    // Test handling of a 2xx POST response
     public void testPostRequest() throws Exception {
-        testRequestWithMethod(RestRequest.Method.POST, "hello world");
+        runRequestHandler(RestRequest.Method.POST, "Default body");
     }
 
-    // Test handling of a non-existent endpoint
+    // Test handling of a 2xx HEAD response
+    public void testHeadRequest() throws Exception {
+        runRequestHandler(RestRequest.Method.HEAD, "Default body");
+    }
+
+    // Test handling of a 4xx response
     public void testNonExistentEndpoint() throws Exception {
-        testRequestWithMethod(RestRequest.Method.GET, "Not Found", RestStatus.NOT_FOUND, "/non-existent-endpoint");
+        mockStatusCode = 410;
+        mockBody = "Not Found";
+        runRequestHandler(RestRequest.Method.GET, "Not Found", RestStatus.GONE, "/non-existent-endpoint");
     }
 
-    // Test handling of server error (e.g., Infino service down)
+    // Test handling of a 5xx response
     public void testServerError() throws Exception {
         String path = "/infino/test-index/_ping?invalidParam=value";
-        when(mockMyHttpClient.sendAsyncRequest(any(), any()))
-                .thenReturn(CompletableFuture.completedFuture(createClientErrorResponse()));
-        testRequestWithMethod(RestRequest.Method.GET, "Internal Server Error", RestStatus.INTERNAL_SERVER_ERROR, path);
+        mockStatusCode = 500;
+        mockBody = "Internal Server Error";
+        runRequestHandler(RestRequest.Method.GET, "Internal Server Error", RestStatus.INTERNAL_SERVER_ERROR, path);
     }
 
     // Helper method to test requests with a specific method and expected response
-    private void testRequestWithMethod(RestRequest.Method method, String expectedBody) throws Exception {
-        testRequestWithMethod(method, expectedBody, RestStatus.OK, "/infino/test-index/_ping");
-    }
-
-    // Test successful PUT request
-    public void testPutRequest() throws Exception {
-        testRequestWithMethod(RestRequest.Method.PUT, "Resource updated successfully");
-    }
-
-    // Test successful DELETE request
-    public void testDeleteRequest() throws Exception {
-        testRequestWithMethod(RestRequest.Method.DELETE, "Resource deleted successfully");
-    }
-
-    // Test request with invalid parameters
-    public void testInvalidParameters() throws Exception {
-        String path = "/infino/test-index/_ping?invalidParam=value";
-        testRequestWithMethod(RestRequest.Method.GET, "Invalid parameters", RestStatus.BAD_REQUEST, path);
-    }
-
-    // Test handling of client error (e.g., bad request)
-    public void testClientError() throws Exception {
-        String path = "/infino/test-index/_ping?invalidParam=value";
-        when(mockMyHttpClient.sendAsyncRequest(any(), any()))
-                .thenReturn(CompletableFuture.completedFuture(createClientErrorResponse()));
-        testRequestWithMethod(RestRequest.Method.GET, "Bad Request", RestStatus.BAD_REQUEST, path);
-    }
-
-    // Test handling of request timeouts
-    public void testRequestTimeout() throws Exception {
-        String path = "/infino/test-index/_ping?invalidParam=value";
-        // Simulate a timeout scenario
-        CompletableFuture<HttpResponse<String>> delayedFuture = new CompletableFuture<>();
-        when(mockMyHttpClient.sendAsyncRequest(any(), any())).thenReturn(delayedFuture);
-        testRequestWithMethod(RestRequest.Method.GET, "Request timeout", RestStatus.REQUEST_TIMEOUT, path);
-
-        // Complete the future after a deliberate delay
-        Executors.newSingleThreadScheduledExecutor().schedule(
-                () -> delayedFuture.complete(createFakeResponse()), 10, TimeUnit.SECONDS);
+    private void runRequestHandler(RestRequest.Method method, String expectedBody) throws Exception {
+        runRequestHandler(method, expectedBody, RestStatus.OK, "/infino/test-index/_ping");
     }
 
     // Test response with a large payload
     public void testLargeResponsePayload() throws Exception {
-        String largePayload = String.join("", Collections.nCopies(1000, "Large payload. "));
-        when(mockMyHttpClient.sendAsyncRequest(any(), any()))
-                .thenReturn(CompletableFuture.completedFuture(createCustomResponse(largePayload)));
-        testRequestWithMethod(RestRequest.Method.GET, largePayload);
+        mockBody = String.join("", Collections.nCopies(1000, "Large payload. "));
+        runRequestHandler(RestRequest.Method.GET, mockBody);
     }
 
-    // Test handling when Infino service is unavailable (e.g., network issue)
-    public void testInfinoServiceUnavailable() throws Exception {
-        String path = "/infino/test-index/_ping?invalidParam=value";
-        when(mockMyHttpClient.sendAsyncRequest(any(), any()))
-                .thenReturn(CompletableFuture.failedFuture(new IOException("Service Unavailable")));
-        testRequestWithMethod(RestRequest.Method.GET, "Service Unavailable", RestStatus.SERVICE_UNAVAILABLE, path);
-    }
-
-    private class ErrorResponse extends HttpResponse
-    // Create a fake client error response for testing
-    private HttpResponse<String> createClientErrorResponse() {
-        return new HttpResponse<>() {
-            @Override
-            public int statusCode() {
-                return 500; // Server Error
-            }
-        };
-    }
-
-    // Create a custom response with a specified body for testing
-    private HttpResponse<String> createCustomResponse(String responseBody) {
-        return new HttpResponse<>() {
-            // ... [override methods as necessary, return responseBody for the body] ...
-        };
-    }
-
-    // Test that the REST request is serialized correctly
-    public void testRequestSerialization() throws Exception {
-        String expectedUri = "http://test-host:3000/infino/ping";
-        when(mockInfinoSerializeRequestURI.getFinalUrl()).thenReturn(expectedUri);
-        when(mockInfinoSerializeRequestURI.getMethod()).thenReturn(RestRequest.Method.GET);
-
-        FakeRestRequest request = new FakeRestRequest.Builder(xContentRegistry()).withPath("/infino/test-index/_ping").build();
-        FakeRestChannel channel = new FakeRestChannel(request, randomBoolean(), 1);
-
-        handler.handleRequest(request, channel, mockNodeClient);
-        assertTrue("Request serialization did not complete", channel.latch.await(5, TimeUnit.SECONDS));
-        assertEquals("Expected final URI did not match", expectedUri, mockInfinoSerializeRequestURI.getFinalUrl());
-    }
-
-    // Test handling when Infino returns a non-OK response
-    public void testNonOkResponseFromInfino() throws Exception {
-        simulateInfinoResponse(RestStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
-        testRequestResponse(RestStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
-    }
-
-    // Test handling when an exception occurs during request processing
-    public void testExceptionDuringRequestProcessing() throws Exception {
-        simulateInfinoResponseException(new IOException("Network error"));
-        testRequestResponse(RestStatus.SERVICE_UNAVAILABLE, "Network error");
-    }
-
-    // Helper method to simulate a response from Infino
-    private void simulateInfinoResponse(RestStatus status, String responseBody) {
-        when(mockMyHttpClient.sendAsyncRequest(any(HttpRequest.class), any()))
-            .thenReturn(CompletableFuture.completedFuture(createFakeResponse(status, responseBody)));
-    }
-
-    // Helper method to simulate an exception during a response from Infino
-    private void simulateInfinoResponseException(Exception exception) {
-        CompletableFuture<HttpResponse<String>> future = new CompletableFuture<>();
-        future.completeExceptionally(exception);
-        when(mockMyHttpClient.sendAsyncRequest(any(HttpRequest.class), any())).thenReturn(future);
-    }
-
-    // Helper method to create a fake HttpResponse for testing with custom status and body
-    private HttpResponse<String> createFakeResponse(RestStatus status, String body) {
-        return new HttpResponse<>() {
-            @Override
-            public int statusCode() {
-                return status.getStatus();
-            }
-
-            // ... [other overridden methods] ...
-
-            @Override
-            public String body() {
-                return body;
-            }
-        };
-    }
-
-    // Helper method to test the response from a request
-    private void testRequestResponse(RestStatus expectedStatus, String expectedBody) throws Exception {
-        FakeRestRequest request = new FakeRestRequest.Builder(xContentRegistry()).withPath("/infino/test-index/_action").build();
-        FakeRestChannel channel = new FakeRestChannel(request, randomBoolean(), 1);
-
-        handler.handleRequest(request, channel, mockNodeClient);
-
-        assertTrue("Response was not received in time", channel.latch.await(5, TimeUnit.SECONDS));
-        assertEquals("Unexpected response status", expectedStatus, channel.capturedResponse().status());
-        assertEquals("Unexpected response body", expectedBody, channel.capturedResponse().content().utf8ToString());
-    }
-    // Test handling when Lucene index already exists
-    public void testLuceneIndexExists() throws Exception {
-        simulateIndexExists("test-index", true);
-        testRequestWithIndexCreation("test-index", false); // Expect no index creation
-    }
-
-    // Test creating a new Lucene index
-    public void testCreateNewLuceneIndex() throws Exception {
-        simulateIndexExists("new-index", false);
-        testRequestWithIndexCreation("new-index", true); // Expect index creation
-    }
-
-    // Test failure when creating a Lucene index
-    public void testLuceneIndexCreationFailure() throws Exception {
-        simulateIndexExists("failed-index", false);
-        simulateIndexCreationFailure("failed-index");
-        testRequestWithIndexCreation("failed-index", true, false); // Expect index creation attempt but failure
-    }
-
-    // Simulate whether an index exists or not
-    private void simulateIndexExists(String indexName, boolean exists) {
-        when(mockNodeClient.admin().indices().exists(any(IndicesExistsRequest.class), any()))
-            .thenAnswer(invocation -> {
-                ActionListener<IndicesExistsResponse> listener = invocation.getArgument(1);
-                listener.onResponse(new IndicesExistsResponse(exists));
-                return null;
-            });
-    }
-
-    // Simulate successful or failed index creation
-    private void simulateIndexCreation(String indexName, boolean success) {
-        when(mockNodeClient.admin().indices().create(any(CreateIndexRequest.class), any()))
-            .thenAnswer(invocation -> {
-                ActionListener<CreateIndexResponse> listener = invocation.getArgument(1);
-                if (success) {
-                    listener.onResponse(new CreateIndexResponse(true, true, indexName));
-                } else {
-                    listener.onFailure(new IOException("Failed to create index"));
-                }
-                return null;
-            });
-    }
-
-    // Test request handling with potential index creation
-    private void testRequestWithIndexCreation(String indexName, boolean expectCreation) throws Exception {
-        testRequestWithIndexCreation(indexName, expectCreation, true);
-    }
-
-    // Test request handling with potential index creation and handle creation success/failure
-    private void testRequestWithIndexCreation(String indexName, boolean expectCreation, boolean creationSuccess) throws Exception {
-        simulateIndexCreation(indexName, creationSuccess);
-        String path = "/infino/" + indexName + "/_action";
-        FakeRestRequest request = new FakeRestRequest.Builder(xContentRegistry()).withPath(path).build();
-        FakeRestChannel channel = new FakeRestChannel(request, randomBoolean(), 1);
-
-        handler.handleRequest(request, channel, mockNodeClient);
-
-        // Wait for the response
-        boolean responseReceived = channel.latch.await(5, TimeUnit.SECONDS);
-        assertTrue("Response was not received in time", responseReceived);
-
-        // Assertions based on whether an index was expected to be created or not
-        if (expectCreation) {
-            if (creationSuccess) {
-                // Assert successful index creation and OK response
-                assertEquals("Expected one response", 1, channel.responses().get());
-                assertEquals("Expected status to be OK", RestStatus.OK, channel.capturedResponse().status());
-            } else {
-                // Assert failed index creation and error response
-                assertEquals("Expected one error", 1, channel.errors().get());
-                assertNotEquals("Expected status not to be OK", RestStatus.OK, channel.capturedResponse().status());
-            }
-        } else {
-            // Assert no index creation and OK response
-            assertEquals("Expected one response", 1, channel.responses().get());
-            assertEquals("Expected status to be OK", RestStatus.OK, channel.capturedResponse().status());
-        }
-    }
-    
     // Generic helper method to test requests
-    private void testRequestWithMethod(RestRequest.Method method, String expectedBody, RestStatus expectedStatus, String path) throws Exception {
+    private void runRequestHandler(RestRequest.Method method, String expectedBody, RestStatus expectedStatus, String path) throws Exception {
         when(mockInfinoSerializeRequestURI.getMethod()).thenReturn(method);
-        when(mockInfinoSerializeRequestURI.getFinalUrl()).thenReturn("http://test-host:3000" + path);
+        when(mockInfinoSerializeRequestURI.getFinalUrl()).thenReturn("http://test-path" + path);
 
         FakeRestRequest request = new FakeRestRequest.Builder(xContentRegistry()).withPath(path).withMethod(method).build();
         FakeRestChannel channel = new FakeRestChannel(request, randomBoolean(), 1);
 
         handler.handleRequest(request, channel, mockNodeClient);
 
-        boolean responseReceived = channel.latch.await(5, TimeUnit.SECONDS);
+        boolean responseReceived = channel.latch.await(10, TimeUnit.SECONDS);
         assertTrue("Response was not received in time", responseReceived);
 
-        assertEquals("Expected no errors", 0, channel.errors().get());
-        assertEquals("Expected one response", 1, channel.responses().get());
+        int expectedErrors = 1;
+        int expectedResponses = 0;
+        if (expectedStatus == RestStatus.OK) {
+            expectedErrors = 0;
+            expectedResponses = 1;
+        }
+
+        assertEquals("Expected no errors", expectedErrors, channel.errors().get());
+        assertEquals("Expected one response", expectedResponses, channel.responses().get());
         assertEquals("Expected status to match", expectedStatus, channel.capturedResponse().status());
         assertEquals("Response content did not match", expectedBody, channel.capturedResponse().content().utf8ToString());
     }

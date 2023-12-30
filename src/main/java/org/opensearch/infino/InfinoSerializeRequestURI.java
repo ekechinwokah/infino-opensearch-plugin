@@ -21,6 +21,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.opensearch.rest.RestRequest;
 
+import static org.opensearch.rest.RestRequest.Method.*;
+
 /**
  * Serialize OpenSearch Infino REST request to an Infino URL.
  * 1. Search window defaults to the past 30 days if not specified by the request.
@@ -59,108 +61,112 @@ public class InfinoSerializeRequestURI {
      * @param request - the request to be serialized.
      */
     public InfinoSerializeRequestURI(RestRequest request) throws IllegalArgumentException {
-
-        // Consume the parameters
-        params = getInfinoParams(request);
-
-        // Get the requested method
-        method = request.method();
-
-        // Get the Infino endpoint
-        infinoEndpoint = getEnvVariable("INFINO_SERVER_URL");
-        if (infinoEndpoint == null || infinoEndpoint.isEmpty()) {
-            infinoEndpoint = defaultInfinoEndpoint;
-            logger.info("Setting Infino Server URL to its default value.");
-        }
-
+        parseRequest(request);
         setDefaultTimeRange();
-
-        // Split the request path
-        String requestPath = params.get("infinoPath");
-        logger.info("Request path is " + requestPath);
-        if (requestPath != null) {
-            int pathElement = requestPath.lastIndexOf("/");
-            prefix = getPrefix(pathElement, requestPath);
-            path = requestPath.substring(pathElement + 1);
-        }
-
-        logger.info("Path is now " + path);
-
-        // Get the index name
-        indexName = params.get("infinoIndex");
-
-        // This should be caught be the security manager, but catch here in case
-        if (indexName == null) throw new IllegalArgumentException("Index name must be specified");
-
-        // Determine the index type
-        if (requestPath != null) {
-            int typeIndex = requestPath.lastIndexOf("/");
-            String index = getPrefix(typeIndex, requestPath);
-            logger.info("index is " + index);
-            if ("logs".equals(index)) {
-                indexType = InfinoIndexType.LOGS;
-            } else if ("metrics".equals(index)) {
-                indexType = InfinoIndexType.METRICS;
-            } else {
-                indexType = InfinoIndexType.UNDEFINED;
-            }
-        }
-
         constructInfinoRequestURI();
-
-        logger.info("Serialized REST request for Infino to: " + finalUrl);
     }
+
+    private void parseRequest(RestRequest request) {
+        params = getInfinoParams(request);
+        method = request.method();
+        indexName = params.get("infinoIndex");
+        validateIndexName();
+        determineEndpoint();
+        extractPathAndIndexType(params.get("infinoPath"));
+    }
+
+    private void determineEndpoint() {
+        infinoEndpoint = getEnvVariable("INFINO_SERVER_URL", defaultInfinoEndpoint);
+    }
+
+    private void validateIndexName() {
+        if (indexName == null || indexName.isEmpty()) {
+            throw new IllegalArgumentException("Index name must be specified");
+        }
+    }
+
+    private void extractPathAndIndexType(String requestPath) {
+        if (requestPath != null) {
+            int lastSlash = requestPath.lastIndexOf("/");
+            prefix = getPrefix(lastSlash, requestPath);
+            path = requestPath.substring(lastSlash + 1);
+            indexType = determineIndexType(requestPath, lastSlash);
+        } else if (method != PUT && method != DELETE) {
+            throw new IllegalArgumentException("Request path cannot be null");
+        }
+    }
+    
+    private InfinoIndexType determineIndexType(String requestPath, int lastSlash) {
+        String indexSegment = getPrefix(lastSlash, requestPath);
+        if (indexSegment == null) {
+            return InfinoIndexType.UNDEFINED; // Or a special type if necessary
+        }
+        return switch (indexSegment) {
+            case "logs" -> InfinoIndexType.LOGS;
+            case "metrics" -> InfinoIndexType.METRICS;
+            default -> InfinoIndexType.UNDEFINED;
+        };
+    }    
+    
 
     // Helper function to construct Infino URL
     private void constructInfinoRequestURI() {
+        // Implement logic based on the 'method' and 'indexType'
+        finalUrl = switch (method) {
+            case GET -> constructGetUrl();
+            case POST -> constructPostUrl();
+            case PUT, DELETE -> constructPutDeleteUrl();
+            default -> throw new IllegalArgumentException("Unsupported method: " + method);
+        };
 
-        String errorString =  "Error constructing Infino URL for: " + infinoEndpoint + "/" + indexName + "/" + this.path;
-        logger.info("Constructing Infino URL for: " + infinoEndpoint + "/" + indexName);
+        validateFinalUrl();
+    }
 
-        switch (method) {
-            case GET -> {
-                // We shouldn't have a null path at this point
-                if (this.path == null) throw new IllegalArgumentException(errorString);
+    private void validateFinalUrl() {
+        if (finalUrl == null || finalUrl.isEmpty()) {
+            throw new IllegalArgumentException("Final URL construction failed for: " + method + " " + indexName);
+        }
+    }
 
-                if (this.path.endsWith("_ping")) {
-                    finalUrl =  infinoEndpoint + "/ping";
-                }
-
-                // Default to LOGS for search
-                if (this.path.endsWith("_search")) {
-                    finalUrl = switch(this.indexType) {
-                        case METRICS -> infinoEndpoint + "/" + indexName + "/search_metrics?" + buildQueryString(
+    private String constructGetUrl() {
+        // Constructing URL for GET requests
+        switch (path) {
+            case "_ping":
+                return infinoEndpoint + "/ping";
+            case "_search":
+                return switch (indexType) {
+                    case METRICS -> infinoEndpoint + "/" + indexName + "/search_metrics?" + buildQueryString(
                             "name", params.get("name"),
                             "value", params.get("value"),
                             "start_time", startTime,
                             "end_time", endTime);
-                        default ->  infinoEndpoint + "/" + indexName + "/search_logs?" + buildQueryString(
+                    default -> infinoEndpoint + "/" + indexName + "/search_logs?" + buildQueryString(
                             "text", params.get("text"),
                             "start_time", startTime,
                             "end_time", endTime);
-                    };
-                }
-
-                if (this.path.endsWith("_summarize")) {
-                    finalUrl =  infinoEndpoint + "/" + indexName + "/summarize?" + buildQueryString(
-                            "text", params.get("text"),
-                            "start_time", startTime,
-                            "end_time", endTime);
-                    };
-                }
-            case POST -> {
-                finalUrl =  switch(indexType) {
-                    case LOGS ->  infinoEndpoint + "/" + indexName + "/append_log";
-                    case METRICS -> infinoEndpoint + "/" + indexName + "/append_metric";
-                    default -> throw new IllegalArgumentException(errorString);
                 };
-            }
-            case PUT, DELETE -> {
-                finalUrl =  infinoEndpoint + "/:" + indexName;
-            }
+            case "_summarize":
+                return infinoEndpoint + "/" + indexName + "/summarize?" + buildQueryString(
+                        "text", params.get("text"),
+                        "start_time", startTime,
+                        "end_time", endTime);
+            default:
+                throw new IllegalArgumentException("Unsupported GET path: " + path);
         }
-        // If request contains an unsupported path for Infino, finalUrl will be null
-        if (finalUrl == null) throw new IllegalArgumentException(errorString);
+    }
+    
+    private String constructPostUrl() {
+        // Constructing URL for POST requests
+        return switch (indexType) {
+            case LOGS -> infinoEndpoint + "/" + indexName + "/append_log";
+            case METRICS -> infinoEndpoint + "/" + indexName + "/append_metric";
+            default -> throw new IllegalArgumentException("Unsupported index type for POST: " + indexType);
+        };
+    }
+    
+    private String constructPutDeleteUrl() {
+        // Constructing URL for PUT and DELETE requests
+        return infinoEndpoint + "/:" + indexName;
     }
 
     // Set the default time range for searches
@@ -196,9 +202,20 @@ public class InfinoSerializeRequestURI {
         }
     }
 
-    // Helper method for unit tests etc.
-    protected String getEnvVariable(String name) {
-        return System.getenv(name);
+    /**
+     * Retrieves the value of the specified environment variable or returns the default value if the environment variable is not set.
+     * 
+     * @param name The name of the environment variable.
+     * @param defaultValue The default value to return if the environment variable is not set.
+     * @return The value of the environment variable or the default value.
+     */
+    public static String getEnvVariable(String name, String defaultValue) {
+        String value = System.getenv(name);
+        if (value == null || value.isEmpty()) {
+            logger.info("Environment variable " + name + " is not set. Using default value: " + defaultValue);
+            return defaultValue;
+        }
+        return value;
     }
 
     // Helper method for unit tests etc.
