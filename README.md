@@ -33,11 +33,8 @@ To address **complexity**, Infino focuses on AI and automation:
 
 - **Access:** NLP support + charts-on-demand for chat interfaces like Slack or Teams.
 - **Management:** No schema, no labels, no master node + autoscaled everything.
-- **Dashboards:** OSS dashboard support + SQL support for BI interfaces like Tableau or Sigma.
 - **Analysis:** Hypeless LLMs + scalable search to accelerate your investigations.
 
-![Architecture (Light)](docs/images/Infino_architecture_light.png#gh-light-mode-only)
-![Architecture (Dark)](docs/images/Infino_architecture_dark.png#gh-dark-mode-only)
 
 # What is the Infino plugin for OpenSearch?
 
@@ -49,24 +46,21 @@ In OpenSearch, a collection is represented by an index named Infino which contai
 
 Cluster requests work as normal but do not impact Infino Collections which are automanaged.
 
+![Architecture (Light)](docs/images/Infino_Architecture.png)
+
 ## Developer Docs
-Read our repo documentation [here](https://infinohq.github.io/infino/doc/infino/index.html).
+Read the OpenSearch documentation [here](https://opensearch.org/docs/latest/api-reference/search/). We do not support all API calls; we will be building a documented list of what we support. More to come.
 
 ## Features
-Note that we are still very much an alpha product but we have lots on the roadmap. Our development at the moment is focused on increasing the performance of the core engine to address **cost** but we are starting to add features to address **complexity**. 
+Note that we are still very much an alpha product but we have lots on the roadmap. Our development at the moment is focused on increasing the performance of the core engine to address **cost** but we are starting to add features to address **complexity**. We hope to transform OpenSearch into a best-in-class observability stack.
 
 #### Available now
- - Store logs and metrics
- - Ingest using [FluentBit](https://fluentbit.io/)
- - Query logs and metrics
- - Python client
- - LLM monitoring using [Langchain](https://github.com/langchain-ai/langchain)
+ - We are currently focused on improving logs / metrics performance in OpenSearch by 10x.
 
 #### Coming soon
-- Dashboards
-- SQL
 - NLP
 - Traces
+- LLM monitoring using [Langchain](https://github.com/langchain-ai/langchain)
 - AI copilot
 
 ## Getting started
@@ -75,17 +69,47 @@ Note that we are still very much an alpha product but we have lots on the roadma
 For now, you need to build the repo. You will first need to:
 
 - Install [Docker](https://docs.docker.com/engine/install/).
-- Install [Rust toolchain](https://www.rust-lang.org/tools/install).
+- Install [SDKMan](https://www.rust-lang.org/tools/install).
+- Clone [Infino](https://github.com/infinohq/infino).
+- Clone [OpenSearch](https://github.com/opensearch-project/OpenSearch).
+- Clone [OpenSearch dashboard](https://github.com/opensearch-project/OpenSearch-Dashboards).
 - Gradle build
 
-### Examples
 
-* [Integration with Fluentbit](examples/fluentbit/README.md) - Learn how to publish telemetry to Infino using FluentBit.
-* [LLM monitoring with Langchain](examples/llm-monitoring-langchain/llm-monitoring-langchain.ipynb) - Discover how Infino's callback in Langchain can be used for monitoring requests in real-time. Also checkout the [Langchain <> Infino docs](https://python.langchain.com/docs/ecosystem/integrations/infino).
-* [LLM monitoring with OpenAI](examples/llm-monitoring-openai/llm-monitoring-openai.ipynb) - See an example of monitoring OpenAI's services.
-* [Using Infino's Python client](examples/python-client/rally-tracks.ipynb) - Get started with the [Python client](https://pyup.io/packages/pypi/infinopy/) for Infino and explore its functionalities.
+### Instructions
+#### Set [SDKMan to use Java 17](https://sdkman.io/usage)
+#### Add the following to your Java policy
+`$HOME/.sdkman/candidates/java/current/conf/security/java.policy`
+```
+grant {
+  // Add permissions to allow Infino OpenSearch Plugin to access Infino using OpenSearch threadpool
+permission org.opensearch.secure_sm.ThreadPermission "modifyArbitraryThread";
+permission java.net.URLPermission "http://localhost:3000/-", "*";
+}
+```
+#### Build the plugin
+1. Go the infino-search-plugin root directory
+2. Type ``./gradlew build``
+#### Install the plugin in OpenSearch and launch
+1. Go to the OpenSearch root directory
+2. Remove any old infino plugins `bin/opensearch-plugin remove infino-opensearch-plugin-3.0.0-SNAPSHOT`
+2. Install the plugin bin/opensearch-plugin -v install `file:///path/to/infino-opensearch-plugin/build/distributions/infino-opensearch-plugin-3.0.0-SNAPSHOT.zip` (note that you should replace 3.0.0-SNAPSHOT with your opensearch version number)
+3. Run OpenSearch `bin/opensearch` - this will start OpenSearch on port 9200.
 
-</br>
+#### Build Infino and launch
+1. Go to the Infino root dir.
+2. Type `make run` - this will start Infino on port 3000.
+
+#### Test the chain is working
+1. In any shell window, type `curl http://localhost:9200/infino/my-index/_ping`. You should receive a response 'OK'.
+#### Start OpenSearch Dashboard
+1. Go to the OpenSearch Dashboard root dir
+2. Type `npm install 18`
+3. Type `yarn osd clean`
+4. Type `yarn osd bootstrap`
+5. Type `yarn start`
+6. From stdout you will see a line like this: `server log   [03:45:12.165] [info][server][OpenSearchDashboards][http] http server running at http://localhost:5603/qtf`. Point your brower to the URL.
+
 
 Please file an issue if you face any problems or contact us directly if you want to discuss your use-case over virtual coffee.
 

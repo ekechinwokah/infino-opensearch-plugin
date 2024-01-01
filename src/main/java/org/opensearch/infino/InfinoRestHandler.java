@@ -129,10 +129,21 @@ public class InfinoRestHandler extends BaseRestHandler {
         infinoThreadPool.shutdown();
     }
 
-    /** Use a privileged custom thread factory since Security Manager blocks access
-     * to thread groups.
+    /** 
+     * Use a privileged custom thread factory since Security Manager blocks 
+     * access to thread groups.
      *
      * https://github.com/opensearch-project/OpenSearch/issues/5359
+     * 
+     * TODO: this is still not working without setting the following:
+     * 
+     * permission org.opensearch.secure_sm.ThreadPermission "modifyArbitraryThread";
+     * permission java.net.URLPermission "http://localhost:3000/-", "*";
+     * 
+     * in the local java policy file. By setting these, we can actually
+     * just use a regular thread pool. However, leaving this code
+     * in use to save effort in the future as Security Manager
+     * is deprecated after Java 17 and we may need this.
      */
     protected static final class CustomThreadFactory implements ThreadFactory {
         private final AtomicInteger threadNumber = new AtomicInteger(1);
@@ -142,11 +153,6 @@ public class InfinoRestHandler extends BaseRestHandler {
             namePrefix = baseName + "-";
         }
 
-        // TODO: Security Manager is being deprecated after Java 17 - not sure what OpenSearch
-        // will decide to do but VMs, containers, etc. can lock down plugin code these days
-        // better than a JVM so perhaps they remove Security Manager completely and we can change
-        // this code to a simple threadpool or use OpenSearch's threadpool passed in to the REST
-        // handler from the client (i.e. client.Threadpool()).
         public Thread newThread(Runnable r) {
             return AccessController.doPrivileged((PrivilegedAction<Thread>) () -> {
                 Thread t = new Thread(r, namePrefix + threadNumber.getAndIncrement());
