@@ -113,6 +113,10 @@ permission java.net.URLPermission "http://localhost:3000/-", "*";
 
 Please file an issue if you face any problems or contact us directly if you want to discuss your use-case over virtual coffee.
 
+## How to access your Infino collection
+All indexes in Infino have a mirror Lucene index prefixed with `infino-`. Accessing infino-my-index, for example, will give you stats about your Infino Collection. However, to act on your Infino collection (post a doc or search etc) you will access the collection as `/infino/my-index`.
+
+
 ## Contributions
 
 Contributions are welcome and highly appreciated! To get started, check out our [repo docs](http://infinohq.github.io/infino/doc/infino/index.html) and the [contributing guidelines](CONTRIBUTING.md).
