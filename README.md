@@ -69,7 +69,7 @@ Note that we are still very much an alpha product but we have lots on the roadma
 For now, you need to build the repo. You will first need to:
 
 - Install [Docker](https://docs.docker.com/engine/install/).
-- Install [SDKMan](https://www.rust-lang.org/tools/install).
+- Install [SDKMan](hhttps://sdkman.io/).
 - Clone [Infino](https://github.com/infinohq/infino).
 - Clone [OpenSearch](https://github.com/opensearch-project/OpenSearch).
 - Clone [OpenSearch dashboard](https://github.com/opensearch-project/OpenSearch-Dashboards).
