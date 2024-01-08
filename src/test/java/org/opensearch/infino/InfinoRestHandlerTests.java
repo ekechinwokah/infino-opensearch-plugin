@@ -6,7 +6,7 @@
  * compatible open source license.
  */
 
- package org.opensearch.infino;
+package org.opensearch.infino;
 
 import org.junit.Before;
 import org.junit.After;
@@ -54,9 +54,6 @@ import javax.net.ssl.SSLSession;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
 
 /**
@@ -65,13 +62,13 @@ import com.carrotsearch.randomizedtesting.annotations.ThreadLeakScope;
  * We have to mock a number of classes as there is a lot of boilerplate
  * infrastructure around Rest calls and thread management in OpenSearch.
  * 
- * Route validation is handled by BaseRestHandler. We'll need to 
+ * Route validation is handled by BaseRestHandler. We'll need to
  * test that in integration tests as our handler is only registered
  * for validated methods and paths.
  * 
  * Testing the side effects of a PUT or DELETE request (i.e.
- * creating or deleting a Lucene mirror) or testing backoffs 
- * through unit tests has proven to be like shaving a Yak: 
+ * creating or deleting a Lucene mirror) or testing backoffs
+ * through unit tests has proven to be like shaving a Yak:
  * https://en.wiktionary.org/wiki/yak_shaving, so we'll pick
  * these up in integration tests.
  */
@@ -88,14 +85,11 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
     private String mockBody = "Default body";
     // private Map<String, List<String>> mockHeaders;
 
-    private static final Logger logger = LogManager.getLogger(InfinoRestHandlerTests.class);
-
     private MyHttpClient mockMyHttpClient = new MyHttpClient() {
         @Override
         public CompletableFuture<HttpResponse<String>> sendAsyncRequest(
-            HttpRequest request,
-            HttpResponse.BodyHandler<String> responseBodyHandler
-        ) {
+                HttpRequest request,
+                HttpResponse.BodyHandler<String> responseBodyHandler) {
             // Return a CompletableFuture with the mocked response
             CompletableFuture<HttpResponse<String>> future = new CompletableFuture<>();
             future.complete(createFakeResponse(mockStatusCode, mockPath, mockBody));
@@ -103,12 +97,11 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
             return future;
         }
     };
-    
+
     public interface MyHttpClient {
         CompletableFuture<HttpResponse<String>> sendAsyncRequest(
-            HttpRequest request,
-            HttpResponse.BodyHandler<String> responseBodyHandler
-        );
+                HttpRequest request,
+                HttpResponse.BodyHandler<String> responseBodyHandler);
     }
 
     // Use a single thread for testing
@@ -218,16 +211,19 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
         };
     }
 
-    private HttpClient getCustomHttpClient () {
+    private HttpClient getCustomHttpClient() {
         return new HttpClient() {
             @Override
-            public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpRequest request, BodyHandler<T> responseBodyHandler, PushPromiseHandler<T> pushPromiseHandler) {
+            public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpRequest request,
+                    BodyHandler<T> responseBodyHandler, PushPromiseHandler<T> pushPromiseHandler) {
                 throw new UnsupportedOperationException("Not implemented in mock");
             }
 
             @Override
-            public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpRequest request, BodyHandler<T> responseBodyHandler) {
-                CompletableFuture<HttpResponse<String>> future = mockMyHttpClient.sendAsyncRequest(request, convertToSpecificHandler(responseBodyHandler));
+            public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpRequest request,
+                    BodyHandler<T> responseBodyHandler) {
+                CompletableFuture<HttpResponse<String>> future = mockMyHttpClient.sendAsyncRequest(request,
+                        convertToSpecificHandler(responseBodyHandler));
                 return future.thenApply(response -> convertToGenericResponse(response, responseBodyHandler));
             }
 
@@ -296,7 +292,8 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
         return genericResponse;
     }
 
-    // We use our own FakeRestChannel (from BaseRestHandler tests) because we need to
+    // We use our own FakeRestChannel (from BaseRestHandler tests) because we need
+    // to
     // access latch to wait on threads in the handler.
     public final class FakeRestChannel extends AbstractRestChannel {
         protected final CountDownLatch latch;
@@ -334,7 +331,7 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
     }
 
     // Test handling of a 2xx GET response
-    public void testGetRequest() throws Exception {      
+    public void testGetRequest() throws Exception {
         runRequestHandler(RestRequest.Method.GET, "Default body");
     }
 
@@ -375,11 +372,13 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
     }
 
     // Generic helper method to test requests
-    private void runRequestHandler(RestRequest.Method method, String expectedBody, RestStatus expectedStatus, String path) throws Exception {
+    private void runRequestHandler(RestRequest.Method method, String expectedBody, RestStatus expectedStatus,
+            String path) throws Exception {
         when(mockInfinoSerializeRequestURI.getMethod()).thenReturn(method);
         when(mockInfinoSerializeRequestURI.getFinalUrl()).thenReturn("http://test-path" + path);
 
-        FakeRestRequest request = new FakeRestRequest.Builder(xContentRegistry()).withPath(path).withMethod(method).build();
+        FakeRestRequest request = new FakeRestRequest.Builder(xContentRegistry()).withPath(path).withMethod(method)
+                .build();
         FakeRestChannel channel = new FakeRestChannel(request, randomBoolean(), 1);
 
         handler.handleRequest(request, channel, mockNodeClient);
@@ -397,6 +396,7 @@ public class InfinoRestHandlerTests extends OpenSearchTestCase {
         assertEquals("Expected no errors", expectedErrors, channel.errors().get());
         assertEquals("Expected one response", expectedResponses, channel.responses().get());
         assertEquals("Expected status to match", expectedStatus, channel.capturedResponse().status());
-        assertEquals("Response content did not match", expectedBody, channel.capturedResponse().content().utf8ToString());
+        assertEquals("Response content did not match", expectedBody,
+                channel.capturedResponse().content().utf8ToString());
     }
 }
