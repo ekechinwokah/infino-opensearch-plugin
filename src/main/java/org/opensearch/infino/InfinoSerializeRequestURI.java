@@ -25,9 +25,11 @@ import static org.opensearch.rest.RestRequest.Method.*;
 
 /**
  * Serialize OpenSearch Infino REST request to an Infino URL.
- * 1. Search window defaults to the past 30 days if not specified by the request.
- * 2. To access Infino indexes, the REST caller must prefix the index name with '/infino/'.
- * 3. If the specified index does not exist in OpenSearch, create it before sending to Infino.
+ * 1. Search window defaults to the past 7 days if not specified by the request.
+ * 2. To access Infino indexes, the REST caller must prefix the index name with
+ * '/infino/'.
+ * 3. If the specified index does not exist in OpenSearch, create it before
+ * sending to Infino.
  */
 public class InfinoSerializeRequestURI {
 
@@ -121,7 +123,6 @@ public class InfinoSerializeRequestURI {
             default -> InfinoIndexType.UNDEFINED;
         };
     }
-
 
     // Helper function to construct Infino URL
     private void constructInfinoRequestURI() {
@@ -217,10 +218,12 @@ public class InfinoSerializeRequestURI {
     }
 
     /**
-     * Retrieves the value of the specified environment variable or returns the default value if the environment variable is not set.
+     * Retrieves the value of the specified environment variable or returns the
+     * default value if the environment variable is not set.
      *
-     * @param name The name of the environment variable.
-     * @param defaultValue The default value to return if the environment variable is not set.
+     * @param name         The name of the environment variable.
+     * @param defaultValue The default value to return if the environment variable
+     *                     is not set.
      * @return The value of the environment variable or the default value.
      */
     public static String getEnvVariable(String name, String defaultValue) {
@@ -269,16 +272,16 @@ public class InfinoSerializeRequestURI {
     }
 
     /**
-     *  Consumes all the request parameters after the "?" in the URI
-     *  otherwise the Rest handler will fail. We also need to explictly
-     *  read wildcard parameters for the paths defined by routes() in
-     *  the Infino Rest handler as they are not consumed by params()
-     *  in the RestRequest class.
+     * Consumes all the request parameters after the "?" in the URI
+     * otherwise the Rest handler will fail. We also need to explictly
+     * read wildcard parameters for the paths defined by routes() in
+     * the Infino Rest handler as they are not consumed by params()
+     * in the RestRequest class.
      *
-     *  @param request the request to execute
-     *  @return a string hashmap of the request parameters
+     * @param request the request to execute
+     * @return a string hashmap of the request parameters
      */
-     protected Map<String, String> getInfinoParams(RestRequest request) {
+    protected Map<String, String> getInfinoParams(RestRequest request) {
 
         // Initialize a new HashMap to store the parameters
         Map<String, String> requestParamsMap = new HashMap<>();
@@ -296,8 +299,10 @@ public class InfinoSerializeRequestURI {
     }
 
     /**
-     * The type of index in Infino. Infino has a different index for each telemetry data
-     * type: logs, metrics, and traces (traces are not yet supported as of Dec 2023).
+     * The type of index in Infino. Infino has a different index for each telemetry
+     * data
+     * type: logs, metrics, and traces (traces are not yet supported as of Dec
+     * 2023).
      */
     public enum InfinoIndexType {
         /** Undefined type. */
@@ -309,7 +314,6 @@ public class InfinoSerializeRequestURI {
         /** Metrics type. */
         METRICS
     }
-
 
     // Helper method to build query strings
     private String buildQueryString(String... params) {
